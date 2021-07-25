@@ -20,6 +20,13 @@ void MLPClassifier::printWeights() {
   }
 }
 
+std::vector<std::vector<double>> MLPClassifier::MMul(std::vector<std::vector<double>> a, std::vector<std::vector<double>> b) {
+  return b;
+}
+std::vector<std::vector<double>> MLPClassifier::MMul(std::vector<double> a, std::vector<std::vector<double>> b) {
+  return b;
+}
+
 void MLPClassifier::printNestedVector(std::vector<std::vector<double>> inp) {
   for(int i = 0; i < inp.size(); i++) {
     std::cout << "[ ";
@@ -70,17 +77,13 @@ std::vector<double> MLPClassifier::forward(std::vector<double> x) {
   outputs.push_back(x);
 
   for (int i = 0; i < this->weights.size(); i++) {
-    std::vector<std::vector<double>> MMul(outputs[outputs.size() - 1], this->weights[i])
+    std::vector<std::vector<double>> resp = MMul(outputs[outputs.size() - 1], this->weights[i]);
   }
-
-
-
-
 
 
   //Remove bias input (just so future epochs don't have multiple biases)
   x.pop_back();
-  return p;
+  return x;
 }
 
 
