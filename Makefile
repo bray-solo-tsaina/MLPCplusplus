@@ -10,5 +10,8 @@ run:
 runh:
 	./backprop.o ./datasets/homework.csv
 
+runt:
+		./backprop.o ./datasets/test.csv
+
 clean:
 	rm backprop.o

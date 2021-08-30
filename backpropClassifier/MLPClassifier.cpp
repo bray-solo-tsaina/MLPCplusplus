@@ -1,4 +1,28 @@
 #include "MLPClassifier.h"
+#include <math.h>
+
+double sigmoid_fn(double x) {
+  return 1 / (1 + exp(-x));
+}
+
+void MLPClassifier::sigmoid_nets(array2d<double>& x) {
+  for (int i = 0; i < x.w(); i++) {
+    x(0, i, sigmoid_fn(x(0, i)));
+  }
+}
+
+void printArray2d(array2d<double> A) {
+  std::cout << "[ ";
+  for(int i = 0; i < A.h(); i++) {
+    std::cout << "[ ";
+    for(int j = 0; j < A.w(); j++) {
+      std::cout << A(i, j) << ", ";
+    }
+    std::cout << " ], ";
+    std::cout << std::endl;
+  }
+  std::cout << "]" << std::endl;
+}
 
 MLPClassifier::MLPClassifier(const std::vector<int>& layers) {
   this->learningRate = 0.1;
@@ -14,17 +38,10 @@ void MLPClassifier::printWeights() {
   for (int i = 0; i < this->weights.size(); i++) {
     std::cout << std::endl;
     std::cout << "[ ";
-    printNestedVector(weights[i]);
+    printArray2d(weights[i]);
     std::cout << " ]";
     std::cout << std::endl;
   }
-}
-
-std::vector<std::vector<double>> MLPClassifier::MMul(std::vector<std::vector<double>> a, std::vector<std::vector<double>> b) {
-  return b;
-}
-std::vector<std::vector<double>> MLPClassifier::MMul(std::vector<double> a, std::vector<std::vector<double>> b) {
-  return b;
 }
 
 void MLPClassifier::printNestedVector(std::vector<std::vector<double>> inp) {
@@ -38,9 +55,9 @@ void MLPClassifier::printNestedVector(std::vector<std::vector<double>> inp) {
   }
 }
 
-void MLPClassifier::initializeWeights(std::vector<std::vector<double>> X, std::vector<std::vector<double>> y) {
-  int numFeatures = X[0].size();
-  int numOutput = 1; //TODO CURRENTLY ONLY DEALING WITH BINARY CLASSIFICATION (1 or 0)
+void MLPClassifier::initializeWeights(array2d<double> X, array2d<double> y) {
+  int numFeatures = X.w();
+  int numOutput = y.w();
 
   int prevLayerWidth = numFeatures + 1;
 
@@ -50,40 +67,69 @@ void MLPClassifier::initializeWeights(std::vector<std::vector<double>> X, std::v
 
   for (int i = 0; i < this->layers.size(); i++) {
     //create new 2D layer
-    std::vector<std::vector<double>> newLayer;
-    for (int j = 0; j < prevLayerWidth; j++) {
-      std::vector<double> newRow(layers[i], 0);
-      newLayer.push_back(newRow);
-    }
+    // std::vector<std::vector<double>> newLayer;
+    // for (int j = 0; j < prevLayerWidth; j++) {
+    //   std::vector<double> newRow(layers[i], 0);
+    //   newLayer.push_back(newRow);
+    // }
+    array2d<double> newLayer(prevLayerWidth, layers[i], 0);
     this->weights.push_back(newLayer);
     //add that to the list of weights
     prevLayerWidth = this->layers[i] + 1;
   }
-  std::vector<std::vector<double>> newLayer;
-  for (int j = 0; j < prevLayerWidth; j++) {
-    std::vector<double> newRow(numOutput, 0);
-    newLayer.push_back(newRow);
-  }
-  this->weights.push_back(newLayer);
+  // std::vector<std::vector<double>> newLayer;
+  // for (int j = 0; j < prevLayerWidth; j++) {
+  //   std::vector<double> newRow(numOutput, 0);
+  //   newLayer.push_back(newRow);
+  // }
+  array2d<double> lastLayer(prevLayerWidth, numOutput, 0);
+  this->weights.push_back(lastLayer);
 }
 
 /*
   Forward input through in order to get NN output
 */
-std::vector<double> MLPClassifier::forward(std::vector<double> x) {
-  //Add bias input
-  x.push_back(1);
-  std::vector<std::vector<double>> outputs;
-  outputs.push_back(x);
+double * MLPClassifier::forward(double *x) {
+  //adding bias input
+  array2d<double> xinp(1, this->weights[0].h(), 1);
+  for (int i = 0; i < xinp.w() - 1; i++) {
+    xinp(0, i, x[i]);
+  }
+  this->outputs.push_back(xinp);
+  array2d<double> currInp = xinp;
 
   for (int i = 0; i < this->weights.size(); i++) {
-    std::vector<std::vector<double>> resp = MMul(outputs[outputs.size() - 1], this->weights[i]);
+    array2d<double> nets = currInp * this->weights[i];
+    sigmoid_nets(nets);
+
+    if(i != this->weights.size() - 1) { //adding bias to all but final layer
+      array2d<double> nnets(1, nets.w() + 1, 1);
+      for (int i = 0; i < nets.w(); i++) {
+        nnets(0, i, nets(0, i));
+      }
+      this->outputs.push_back(nnets);
+      currInp = nnets;
+    } else {
+      this->outputs.push_back(nets);
+      currInp = nets;
+    }
   }
 
+  // std::cout << "OUPTPUTS:"<< std::endl;
+  // for(int i = 0; i < this->outputs.size(); i++) {
+  //   std::cout << std::endl;
+  //   printArray2d(this->outputs[i]);
+  // }
 
-  //Remove bias input (just so future epochs don't have multiple biases)
-  x.pop_back();
-  return x;
+  return this->outputs[this->outputs.size() - 1](0);
+}
+
+void MLPClassifier::backward(double *output, double *y) {
+  std::vector<array2d<double>> partials;
+  array2d<double> partial(1, this->outputs[this->outputs.size() - 1].w(), 0);
+  for(int i = 0; i < partial.w(); i++) {
+
+  }
 }
 
 
@@ -106,39 +152,52 @@ std::vector<double> MLPClassifier::forward(std::vector<double> x) {
 
 
 void MLPClassifier::fit(std::vector<std::vector<double>> inputs) {
-  std::vector<std::vector<double>> X;
-  std::vector<std::vector<double>> Y;
+  array2d<double> X(inputs.size(), inputs[0].size() - 1, 0);
+  array2d<double> Y(inputs.size(), 1, 0);
+
+
   for (int i = 0; i < inputs.size(); i++) {
-    std::vector<double> newRX;
-    std::vector<double> newRY;
     for (int j = 0; j < inputs[i].size(); j++) {
       if (j != inputs[i].size() - 1) {
-        newRX.push_back(inputs[i][j]);
+        X(i, j, inputs[i][j]);
       } else {
         //PUT THINGS IN A SET?
-        newRY.push_back(inputs[i][j]);
+        Y(i, 0, inputs[i][j]);
       }
     }
-    X.push_back(newRX);
-    Y.push_back(newRY);
   }
   std::cout << "X: " << std::endl;
-  printNestedVector(X);
+  printArray2d(X);
   std::cout << "y: " << std::endl;
-  printNestedVector(Y);
+  printArray2d(Y);
 
   initializeWeights(X, Y);
+  printWeights();
+
 
   //CURRENTLY JUST 1 EPOCH
   int numEpochs = 1;
   for (int i = 0; i < numEpochs; i++) {
-    for (int j = 0; j < X.size() - 1; j++) {
+    for (int j = 0; j < X.h() - 1; j++) { //TODO: DELETE THE - 1
       std::cout << "CURRENT WEIGHTS" << std::endl;
       printWeights();
-      std::vector<double> x = X[j];
-      std::vector<double> y = Y[j];
+      double *xrow = X(j);
+      double *yrow = Y(j);
+      // std::cout << "XROW\n[ ";
+      // for(int i = 0; i < X.w(); i++) {
+      //   std::cout << xrow[i] << ", ";
+      // }
+      // std::cout << "]" << std::endl;
 
-      std::vector<double> output = forward(x);
+
+      double *output = forward(xrow);
+      std::cout << "OUTPUT\n[ ";
+      for(int i = 0; i < Y.w(); i++) {
+        std::cout << output[i] << ", ";
+      }
+      std::cout << "]" << std::endl;
+
+      backward(output, yrow);
     }
   }
 }

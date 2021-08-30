@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "../datareading/reader.cpp"
+#include "../array2d/array2d.h"
 #include "MLPClassifier.h"
 
 int main(int argc, char* argv[]) {

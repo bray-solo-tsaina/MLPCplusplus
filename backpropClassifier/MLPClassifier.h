@@ -2,8 +2,8 @@
 #define MLPCLASSIFIER_H
 #include <vector>
 
-
 #include <iostream>
+#include "../array2d/array2d.h"
 
 class MLPClassifier {
   double learningRate;
@@ -11,13 +11,17 @@ class MLPClassifier {
 
 
   std::vector<int> layers;
-  std::vector<std::vector<std::vector<double>>> weights;
 
-  std::vector<std::vector<double>> MMul(std::vector<std::vector<double>> a, std::vector<std::vector<double>> b);
-  std::vector<std::vector<double>> MMul(std::vector<double> a, std::vector<std::vector<double>> b);
+  //HOW BEST TO STORE? array of ARRAY2D OBJECTS?
+  std::vector<array2d<double>> weights;
 
-  void initializeWeights(std::vector<std::vector<double>> X, std::vector<std::vector<double>> y);
-  std::vector<double> forward(std::vector<double> x);
+  std::vector<array2d<double>> outputs;
+
+  void initializeWeights(array2d<double> X, array2d<double> y);
+  double * forward(double *x);
+  void backward(double *output, double *y);
+
+  void sigmoid_nets(array2d<double>& x);
 
   //DEBUGGING
   void printNestedVector(std::vector<std::vector<double>> inp);
