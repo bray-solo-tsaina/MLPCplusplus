@@ -73,7 +73,9 @@ void MLPClassifier::initializeWeights(array2d<double> X, array2d<double> y) {
     //   newLayer.push_back(newRow);
     // }
     array2d<double> newLayer(prevLayerWidth, layers[i], 0);
+    array2d<double> newLayerZero(prevLayerWidth, layers[i], 0);
     this->weights.push_back(newLayer);
+    this->prevweights.push_back(newLayerZero);
     //add that to the list of weights
     prevLayerWidth = this->layers[i] + 1;
   }
@@ -83,7 +85,9 @@ void MLPClassifier::initializeWeights(array2d<double> X, array2d<double> y) {
   //   newLayer.push_back(newRow);
   // }
   array2d<double> lastLayer(prevLayerWidth, numOutput, 0);
+  array2d<double> lastLayerZero(prevLayerWidth, numOutput, 0);
   this->weights.push_back(lastLayer);
+  this->prevweights.push_back(lastLayerZero);
 }
 
 /*
@@ -128,8 +132,62 @@ void MLPClassifier::backward(double *output, double *y) {
   std::vector<array2d<double>> partials;
   array2d<double> partial(1, this->outputs[this->outputs.size() - 1].w(), 0);
   for(int i = 0; i < partial.w(); i++) {
-
+    //partial.append((trainingY[row, i] - outputs[-1][i]) * (outputs[-1][i]) * (1 - outputs[-1][i]))
+    double val = (y[i] - output[i]) * (output[i]) * (1 - output[i]);
+    partial(0, i, val);
   }
+  partials.push_back(partial);
+  for(int i = this->weights.size() - 1; i >= 0; i--) {
+    array2d<double> partial(1, this->outputs[i].w() - 1, 0);
+    for (int j = 0; j < partial.w(); j++) {
+      double sum = 0;
+      for (int k = 0; k < partials[partials.size() - 1].w(); k++) {
+        sum += partials[partials.size() - 1](0, k) * this->weights[i](j, k);
+      }
+      double partCurr = sum * (1 - this->outputs[i](0, j)) * this->outputs[i](0, j);
+      partial(0, j, partCurr);
+    }
+    partials.push_back(partial);
+  }
+  partials.pop_back(); //TODO: WHY DO THIS?
+  std::cout << "Partials" << std::endl;
+  for (int i = 0; i < partials.size(); i++) {
+    printArray2d(partials[i]);
+  }
+  std::cout << "Fin" << std::endl;
+
+  /*
+  for i in range(len(change_weights)):
+      for j in range(len(change_weights[i])):
+          for k in range(len(change_weights[i][j])):
+              self.initial_weights[i][j][k] += change_weights[i][j][k] + self.momentum * prev_weights[i][j][k]
+              prev_weights[i][j][k] = change_weights[i][j][k] + self.momentum * prev_weights[i][j][k]
+  */
+
+  std::cout << "Outputs" << std::endl;
+  for (int i = 0; i < this->outputs.size(); i++) {
+    printArray2d(this->outputs[i]);
+  }
+  std::cout << "Fin" << std::endl;
+  for (int i = 0; i < this->weights.size(); i++) {
+    for (int j = 0; j < this->weights[i].w(); j++) {
+      for (int k = 0; k < this->weights[i].h(); k++) {
+        // std::cout << "learningRate: " << this->learningRate << std::endl;
+        // std::cout << "* outputs[" << i << "](0, " << k << "): " << this->outputs[i](0, k) << std::endl;
+        // std::cout << "* partials[" << partials.size() - i - 1 << "](0, " << k << "): " << partials[partials.size() - i - 1](0, k) <<std::endl;
+        // std::cout << "+ this->momentum" << this->momentum << std::endl;
+        // std::cout << "* this->previweights[" << i << "](" << j << ", " << k << ")" << this->prevweights[i](j, k);
+        // int a;
+        // std::cin >> a;
+        this->weights[i](j, k, this->weights[i](j, k) + this->learningRate * this->outputs[i](0, k) *
+                        partials[partials.size() - i - 1](0, k) + this->momentum * this->prevweights[i](j, k));
+        this->prevweights[i](j, k, this->weights[i](j, k));
+
+      }
+    }
+  }
+  std::cout << "Updated weights:" << std::endl;
+  printWeights();
 }
 
 
@@ -172,7 +230,6 @@ void MLPClassifier::fit(std::vector<std::vector<double>> inputs) {
   printArray2d(Y);
 
   initializeWeights(X, Y);
-  printWeights();
 
 
   //CURRENTLY JUST 1 EPOCH

@@ -14,6 +14,7 @@ class MLPClassifier {
 
   //HOW BEST TO STORE? array of ARRAY2D OBJECTS?
   std::vector<array2d<double>> weights;
+  std::vector<array2d<double>> prevweights;
 
   std::vector<array2d<double>> outputs;
 
