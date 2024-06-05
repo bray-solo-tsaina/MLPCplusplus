@@ -9,6 +9,7 @@ module.exports = async ({github, context}) => {
 
     const svcReachable = [
         "cmd/",
+        ".github"
     ]
 
     for (let i in pr) {
