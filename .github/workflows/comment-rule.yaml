@@ -5,7 +5,7 @@ on:
     types: [created]
 
 jobs:
-  decal-run-initialization:
+  comment-run-initialization:
     name: run initialization
     runs-on: ubuntu-latest
     steps:
@@ -25,7 +25,7 @@ jobs:
             // extracts the content of "Service To Deploy" section.
             let svcs = prBody.substring(prBody.indexOf(header) + header.length)
             svcs = svcs.substring(0, svcs.indexOf("## ")).trim()
-            
+
             return svcs.indexOf("svc") <= 0
       - name: Checkout main branch
         # This is necessary to checkout ./.github/workflows/decal-find.js
