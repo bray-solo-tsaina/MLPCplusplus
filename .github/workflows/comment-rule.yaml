@@ -12,21 +12,6 @@ jobs:
       - name: check pr
         run: |
           echo ${{ github.event.issue.number }}
-      - name: Run if deploy to svc
-        id: determine
-        uses: actions/github-script@v7
-        with:
-          result-encoding: string
-          script: |
-            // assumes this action runs on pull request event.
-            const prBody = context.payload.issue.body
-            const header = "## Service To Deploy"
-
-            // extracts the content of "Service To Deploy" section.
-            let svcs = prBody.substring(prBody.indexOf(header) + header.length)
-            svcs = svcs.substring(0, svcs.indexOf("## ")).trim()
-
-            return svcs.indexOf("svc") <= 0
       - name: Checkout main branch
         # This is necessary to checkout ./.github/workflows/decal-find.js
         uses: actions/checkout@v4
@@ -36,16 +21,10 @@ jobs:
       - name: Check changed files
         id: run-comment
         uses: actions/github-script@v7
-        env:
-          DETERMINE: ${{ steps.determine.results.output }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           result-encoding: string
           script: |
-            const { DETERMINE } = process.env
-            if (DETERMINE === 'true') {
-              return 'true'
-            }
             const script = require('./.github/workflows/changes-find.js')
             return (await script({github, context}));
       - name: Read output
