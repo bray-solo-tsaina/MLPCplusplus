@@ -25,7 +25,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           result-encoding: string
           script: |
-            const script = require('./.github/workflows/changes-find.js')
+            const script = require('./.github/workflows/comment-find.js')
             return (await script({github, context}));
       - name: Read output
         run: |
