@@ -91,7 +91,7 @@ jobs:
           edit-mode: replace
 
       - name: Give commit status check if not-required to run decal
-#        if: ${{ steps.run_decal.outputs.result == 'false' }}
+       if: ${{ steps.run_decal.outputs.result == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FULL_NAME: ${{ github.event.repository.full_name }}
@@ -104,14 +104,3 @@ jobs:
             /repos/$FULL_NAME/statuses/$SHA \
             -f "state=success" -f "description=Not required to run decal => auto success" \
             -f "context=decal-run-ci"
-
-      - name: Check commit status check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FULL_NAME: ${{ github.event.repository.full_name }}
-          SHA: ${{ github.sha }}
-        run: |
-          gh api \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            /repos/$FULL_NAME/commits/$SHA/statuses
