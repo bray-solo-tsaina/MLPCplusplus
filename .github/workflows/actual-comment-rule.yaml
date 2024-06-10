@@ -1,0 +1,25 @@
+name: Require Decal Run Comment
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  Reqiure-decal-run-comment:
+    name: Require Decal Run Comment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if triggering comment contains "decal run"
+        id: check-comment
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            console.log(context)
+
+
+      - name: Trigger Decal Run Workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo triggering decal!

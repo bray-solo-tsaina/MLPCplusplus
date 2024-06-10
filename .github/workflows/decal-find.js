@@ -9,7 +9,7 @@ module.exports = async ({github, context}) => {
 
     const svcReachable = [
         "cmd/",
-        "array2d",
+        "array2d/",
     ]
 
     for (let i in pr) {
