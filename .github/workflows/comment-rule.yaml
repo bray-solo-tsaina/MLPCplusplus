@@ -91,7 +91,7 @@ jobs:
           edit-mode: replace
 
       - name: Give commit status check if not-required to run decal
-       if: ${{ steps.run_decal.outputs.result == 'false' }}
+        if: ${{ steps.run_decal.outputs.result == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FULL_NAME: ${{ github.event.repository.full_name }}
