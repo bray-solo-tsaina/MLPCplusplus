@@ -27,7 +27,7 @@ public:
 
   // ~array2d() {
   //   delete[] this->pArray;
-  // } test
+  // }
 
   unsigned h() {
     return this->height;
