@@ -95,7 +95,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FULL_NAME: ${{ github.event.repository.full_name }}
-          SHA: ${{ github.sha }}
+          SHA: ${{ github.event.after.sha }}
         run: |
           echo $SHA
           gh api \
@@ -110,7 +110,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FULL_NAME: ${{ github.event.repository.full_name }}
-          SHA: ${{ github.sha }}
+          SHA: ${{ github.event.after.sha }}
         run: |
           gh api \
             -H "Accept: application/vnd.github+json" \
