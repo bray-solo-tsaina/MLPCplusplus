@@ -15,9 +15,13 @@ jobs:
         with:
           result-encoding: string
           script: |
-            console.log(context)
             const body = context.payload.comment.body
             return body === 'decal run'
+
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
 
       - name: Get PR SHA
         id: pr-sha
