@@ -98,7 +98,6 @@ jobs:
           FULL_NAME: ${{ github.event.repository.full_name }}
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          echo $SHA
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
@@ -106,19 +105,3 @@ jobs:
             /repos/$FULL_NAME/statuses/$SHA \
             -f "state=success" -f "description=Not required to run decal => auto success" \
             -f "context=decal-run-ci"
-
-      - name: Check commit status check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FULL_NAME: ${{ github.event.repository.full_name }}
-          SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          gh api \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            /repos/$FULL_NAME/commits/$SHA/statuses
-
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
