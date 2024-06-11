@@ -16,10 +16,14 @@ jobs:
           result-encoding: string
           script: |
             console.log(context)
+            const body = context.payload.comment.body
+            return body === 'decal run'
 
 
       - name: Trigger Decal Run Workflow
         env:
+          CHECK: ${{ steps.check-comment.outputs.result }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo triggering decal!
+          echo $CHECK
