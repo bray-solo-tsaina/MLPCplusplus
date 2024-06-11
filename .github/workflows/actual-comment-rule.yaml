@@ -18,13 +18,8 @@ jobs:
             const body = context.payload.comment.body
             return body === 'decal run'
 
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-
       - name: Trigger Decal Run Workflow
-        if: ${{ steps.check-comment.outputs.result }}
+        if: ${{ steps.check-comment.outputs.result == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -32,6 +27,7 @@ jobs:
 
       - name: Get PR SHA
         id: pr-sha
+        if: ${{ steps.check-comment.outputs.result == 'true' }}
         env:
           ISSUE: ${{ github.event.issue.number }}
           FULL_NAME: ${{ github.event.repository.full_name }}
@@ -43,7 +39,7 @@ jobs:
             /repos/$FULL_NAME/pulls/$ISSUE | jq -r '.head.sha')" >> $GITHUB_OUTPUT
 
       - name: Give commit status to current head PR
-        if: ${{ steps.check-comment.outputs.result }}
+        if: ${{ steps.check-comment.outputs.result == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_SHA: ${{ steps.pr-sha.outputs.pr-sha }}
