@@ -23,6 +23,13 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
 
+      - name: Trigger Decal Run Workflow
+        if: ${{ steps.check-comment.outputs.result }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo triggering decal!
+
       - name: Get PR SHA
         id: pr-sha
         env:
@@ -35,11 +42,17 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             /repos/$FULL_NAME/pulls/$ISSUE | jq -r '.head.sha')" >> $GITHUB_OUTPUT
 
-      - name: Trigger Decal Run Workflow
+      - name: Give commit status to current head PR
         if: ${{ steps.check-comment.outputs.result }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_SHA: ${{ steps.pr-sha.outputs.pr-sha }}
+          FULL_NAME: ${{ github.event.repository.full_name }}
         run: |
-          echo triggering decal!
-          echo $PR_SHA
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/$FULL_NAME/statuses/$PR_SHA \
+            -f "state=success" -f "description=Ran decal for latest commit" \
+            -f "context=decal-run-ci"
