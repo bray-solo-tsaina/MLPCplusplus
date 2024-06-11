@@ -22,7 +22,7 @@ jobs:
       - name: Get PR SHA
         id: pr-sha
         env:
-          ISSUE: ${{ context.issue.number }}
+          ISSUE: ${{ github.issue.number }}
           FULL_NAME: ${{ github.payload.repository.full_name }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
