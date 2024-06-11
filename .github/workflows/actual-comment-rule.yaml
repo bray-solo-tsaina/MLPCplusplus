@@ -15,7 +15,6 @@ jobs:
         with:
           result-encoding: string
           script: |
-            # console.log(context)
             console.log(context.issue.pull_request)
             const body = context.payload.comment.body
             return body === 'decal run'
