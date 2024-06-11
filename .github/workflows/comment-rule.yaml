@@ -16,7 +16,6 @@ jobs:
           script: |
             // assumes this action runs on pull request event.
             const prBody = context.payload.pull_request.body
-            console.log(prBody)
             const header = "## Service To Deploy"
 
             // extracts the content of "Service To Deploy" section.
